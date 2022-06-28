@@ -1,0 +1,53 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/af4ff626-7e19-4132-8574-95efb0e2d3f4')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/af4ff626-7e19-4132-8574-95efb0e2d3f4')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2021-10-01-preview",
+            "properties": {
+                "displayName": "Logon From Outside US - Watchlist",
+                "description": "",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let watchlist = (_GetWatchlist('outsideus')| project country);\nSigninLogs\n| extend city_ = tostring(LocationDetails.city)\n| extend state_ = tostring(LocationDetails.state)\n| extend countryOrRegion_ = tostring(LocationDetails.countryOrRegion)\n| extend geolatitude_ = tostring(LocationDetails.geoCoordinates.latitude)\n| extend geolongitude_ = tostring(LocationDetails.geoCoordinates.longitude)\n| where countryOrRegion_ !in (watchlist)\n| distinct TimeGenerated, Identity, city_, state_, countryOrRegion_, IPAddress, geolatitude_, geolongitude_\n\n",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "tactics": [],
+                "techniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null
+            }
+        }
+    ]
+}
