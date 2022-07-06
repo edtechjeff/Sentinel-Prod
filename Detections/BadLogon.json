@@ -14,7 +14,7 @@
             "kind": "Scheduled",
             "apiVersion": "2021-10-01-preview",
             "properties": {
-                "displayName": "Bad Logon",
+                "displayName": "Brute Force Attack",
                 "description": "",
                 "severity": "High",
                 "enabled": true,
