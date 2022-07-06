@@ -45,7 +45,10 @@
                 "eventGroupingSettings": {
                     "aggregationKind": "SingleAlert"
                 },
-                "alertDetailsOverride": null,
+                "alertDetailsOverride": {
+                    "alertDisplayNameFormat": "Brute Force Portal Logon Account - {{UserPrincipalName}}",
+                    "alertDescriptionFormat": "A Brute Force attack was performed on the App- {{AppDisplayName}} at {{TimeGenerated}} using Account - {{UserPrincipalName}}"
+                },
                 "customDetails": null,
                 "entityMappings": [
                     {
