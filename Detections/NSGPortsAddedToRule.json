@@ -18,7 +18,7 @@
                 "description": "",
                 "severity": "Medium",
                 "enabled": true,
-                "query": "AzureActivity\n| where OperationNameValue == \"MICROSOFT.NETWORK/NETWORKSECURITYGROUPS/SECURITYRULES/WRITE\"\n| where ActivityStatusValue == \"Success\"\n| extend Port = tostring(parse_json(Properties).resource)\n",
+                "query": "AzureActivity\n| where OperationNameValue == \"MICROSOFT.NETWORK/NETWORKSECURITYGROUPS/SECURITYRULES/DELETE\"\n| where ActivityStatusValue == \"Success\"\n| extend Resource = split(_ResourceId, \"/\")\n| extend Security_Rule = tostring(Resource[8])\n| extend Port = tostring(Resource[10])\n| project TimeGenerated, Caller, Security_Rule, Port, ResourceGroup",
                 "queryFrequency": "PT5M",
                 "queryPeriod": "PT5M",
                 "triggerOperator": "GreaterThan",
