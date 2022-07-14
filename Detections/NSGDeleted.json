@@ -8,17 +8,17 @@
     },
     "resources": [
         {
-            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/d65c0949-28f7-4beb-9903-75a92f9c40a8')]",
-            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/d65c0949-28f7-4beb-9903-75a92f9c40a8')]",
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/f775d143-d0fc-49c2-b371-c6aafbc18e69')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f775d143-d0fc-49c2-b371-c6aafbc18e69')]",
             "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
             "kind": "Scheduled",
             "apiVersion": "2021-10-01-preview",
             "properties": {
-                "displayName": "NSG Deleted",
+                "displayName": "NSG Ports Deleted From Rule",
                 "description": "",
                 "severity": "Medium",
                 "enabled": true,
-                "query": "AzureActivity\n| where OperationNameValue == \"MICROSOFT.NETWORK/NETWORKSECURITYGROUPS/DELETE\"\n| extend resource_ = tostring(parse_json(Properties).resource)\n| where ActivityStatusValue == \"Success\"\n\n",
+                "query": "AzureActivity\n| where OperationNameValue == \"MICROSOFT.NETWORK/NETWORKSECURITYGROUPS/SECURITYRULES/DELETE\"\n| where ActivityStatusValue == \"Success\"\n| extend Resource = split(_ResourceId, \"/\")\n| extend NSG_Rule = tostring(Resource[8])\n| extend Port = tostring(Resource[10])\n| project TimeGenerated, Caller, ResourceGroup, NSG_Rule, Port\n",
                 "queryFrequency": "PT5M",
                 "queryPeriod": "PT5M",
                 "triggerOperator": "GreaterThan",
@@ -26,10 +26,10 @@
                 "suppressionDuration": "PT5H",
                 "suppressionEnabled": false,
                 "tactics": [
-                    "ResourceDevelopment"
+                    "DefenseEvasion"
                 ],
                 "techniques": [
-                    "T1584"
+                    "T1484"
                 ],
                 "alertRuleTemplateName": null,
                 "incidentConfiguration": {
@@ -48,12 +48,13 @@
                     "aggregationKind": "SingleAlert"
                 },
                 "alertDetailsOverride": {
-                    "alertDisplayNameFormat": "NSG {{resource_}} was deleted",
-                    "alertDescriptionFormat": "NSG {{resource_}} was deleted by {{Caller}} on the {{ResourceGroup}}"
+                    "alertDisplayNameFormat": "NSG:{{NSG_Rule}} Has been changed {{Port}} has been deleted",
+                    "alertDescriptionFormat": "{{Caller}} has modified an NSG:{{NSG_Rule}} in {{ResourceGroup}}. "
                 },
                 "customDetails": {
                     "ResourceGroup": "ResourceGroup",
-                    "NSGName": "resource_"
+                    "Port": "Port",
+                    "NSG_Rule": "NSG_Rule"
                 },
                 "entityMappings": [
                     {
@@ -62,15 +63,6 @@
                             {
                                 "identifier": "FullName",
                                 "columnName": "Caller"
-                            }
-                        ]
-                    },
-                    {
-                        "entityType": "IP",
-                        "fieldMappings": [
-                            {
-                                "identifier": "Address",
-                                "columnName": "CallerIpAddress"
                             }
                         ]
                     }
