@@ -18,7 +18,7 @@
                 "description": "",
                 "severity": "Medium",
                 "enabled": true,
-                "query": "AzureActivity\n| where OperationNameValue == \"MICROSOFT.NETWORK/NETWORKSECURITYGROUPS/SECURITYRULES/DELETE\"\n| where ActivityStatusValue == \"Success\"\n| extend Resource = split(_ResourceId, \"/\")\n| extend Security_Rule = tostring(Resource[8])\n| extend Port = tostring(Resource[10])\n| project TimeGenerated, Caller, Security_Rule, Port, ResourceGroup",
+                "query": "AzureActivity\n| where OperationNameValue == \"MICROSOFT.NETWORK/NETWORKSECURITYGROUPS/SECURITYRULES/DELETE\"\n| where ActivityStatusValue == \"Success\"\n| extend Resource = split(_ResourceId, \"/\")\n| extend Security_Rule = tostring(Resource[8])\n| extend Port = tostring(Resource[10])\n| project TimeGenerated, Caller, Security_Rule, Port, ResourceGroup\n\n",
                 "queryFrequency": "PT5M",
                 "queryPeriod": "PT5M",
                 "triggerOperator": "GreaterThan",
@@ -48,38 +48,21 @@
                     "aggregationKind": "SingleAlert"
                 },
                 "alertDetailsOverride": {
-                    "alertDisplayNameFormat": "An NSG Has been changed {{Port}} has been added",
-                    "alertDescriptionFormat": "{{Caller}} has modified an NSG in {{ResourceGroup}} has been modified. "
+                    "alertDisplayNameFormat": "NSG: {{Security_Rule}} Has been changed {{Port}} has been added",
+                    "alertDescriptionFormat": "{{Caller}} has modified NSG:{{Security_Rule}} in {{ResourceGroup}}. "
                 },
                 "customDetails": {
                     "Port": "Port",
-                    "ResourceGroup": "ResourceGroup"
+                    "ResourceGroup": "ResourceGroup",
+                    "Security_Rule": "Security_Rule"
                 },
                 "entityMappings": [
-                    {
-                        "entityType": "IP",
-                        "fieldMappings": [
-                            {
-                                "identifier": "Address",
-                                "columnName": "CallerIpAddress"
-                            }
-                        ]
-                    },
                     {
                         "entityType": "Account",
                         "fieldMappings": [
                             {
                                 "identifier": "FullName",
                                 "columnName": "Caller"
-                            }
-                        ]
-                    },
-                    {
-                        "entityType": "AzureResource",
-                        "fieldMappings": [
-                            {
-                                "identifier": "ResourceId",
-                                "columnName": "SubscriptionId"
                             }
                         ]
                     }
