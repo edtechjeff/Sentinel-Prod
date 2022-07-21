@@ -1,0 +1,80 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/e2b80370-4a4a-4a79-9656-e1420c011f15')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/e2b80370-4a4a-4a79-9656-e1420c011f15')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2021-10-01-preview",
+            "properties": {
+                "displayName": "NSG Port Added Not Allowed",
+                "description": "",
+                "severity": "High",
+                "enabled": true,
+                "query": "let watchlist = dynamic([\"3389\"]);\nAzureActivity\n| where OperationNameValue == \"MICROSOFT.NETWORK/NETWORKSECURITYGROUPS/SECURITYRULES/WRITE\"\n| where ActivityStatusValue == \"Start\"\n| extend destinationAddressPrefix_ = tostring(parse_json(tostring(parse_json(tostring(Properties_d.requestbody)).properties)).destinationAddressPrefix)\n| extend destinationPortRange_ = tostring(parse_json(tostring(parse_json(tostring(Properties_d.requestbody)).properties)).destinationPortRange)\n| extend protocol_ = tostring(parse_json(tostring(parse_json(tostring(Properties_d.requestbody)).properties)).protocol)\n| extend Resource = split(_ResourceId, \"/\")\n| extend Resource_Group = split(_ResourceId, \"/\").[4]\n| extend NSG_Name = split(_ResourceId, \"/\").[8]\n| extend NSG_Port = split(_ResourceId, \"/\").[10]\n| project\n    destinationAddressPrefix_,\n    destinationPortRange_,\n    protocol_,\n    Resource_Group,\n    NSG_Name,\n    NSG_Port,\n    Caller\n| where destinationPortRange_ !in (watchlist) \n",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "tactics": [
+                    "ResourceDevelopment"
+                ],
+                "techniques": [
+                    "T1583",
+                    "T1584",
+                    "T1588"
+                ],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P1D",
+                        "matchingMethod": "Selected",
+                        "groupByEntities": [
+                            "Account"
+                        ],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": [
+                            "NSG_Name"
+                        ]
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": {
+                    "alertDisplayNameFormat": "Ports enabled on NSG: {{NSG_Name}} not authorized ",
+                    "alertDescriptionFormat": "Port {{destinationPortRange_}} was added to NSG {{NSG_Name}} by User {{Caller}}"
+                },
+                "customDetails": {
+                    "destinationPortRange": "destinationPortRange_",
+                    "Resource_Group": "Resource_Group",
+                    "NSG_Name": "NSG_Name"
+                },
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "Caller"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null
+            }
+        }
+    ]
+}
