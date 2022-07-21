@@ -1,0 +1,80 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/fdca6301-220b-46a3-a23d-d2da2a64abe2')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/fdca6301-220b-46a3-a23d-d2da2a64abe2')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2021-10-01-preview",
+            "properties": {
+                "displayName": "Change RBAC Role",
+                "description": "",
+                "severity": "High",
+                "enabled": true,
+                "query": "AuditLogs\n| extend InitiatedBy = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)\n| extend RoleAdded = tostring(TargetResources[0].displayName)\n| extend AccountRoleAddedTo = tostring(TargetResources[2].displayName)\n| where Category == \"RoleManagement\"\n| where AADOperationType == \"AssignPermanentEligibleRole\"\n| where Result == \"success\"\n| project TimeGenerated, InitiatedBy, RoleAdded, AccountRoleAddedTo\n\n",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT6M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "tactics": [
+                    "Persistence",
+                    "PrivilegeEscalation"
+                ],
+                "techniques": [
+                    "T1098",
+                    "T1078",
+                    "T1078"
+                ],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": true,
+                        "lookbackDuration": "P1D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": {
+                    "alertDisplayNameFormat": "Role {{RoleAdded}} has been added to Account",
+                    "alertDescriptionFormat": "Role {{RoleAdded}} has been added to Account {{AccountRoleAddedTo}} by {{InitiatedBy}} "
+                },
+                "customDetails": {
+                    "RoleAdded": "RoleAdded",
+                    "TimeGenerated": "TimeGenerated"
+                },
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "InitiatedBy"
+                            },
+                            {
+                                "identifier": "DisplayName",
+                                "columnName": "AccountRoleAddedTo"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null
+            }
+        }
+    ]
+}
