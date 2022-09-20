@@ -50,7 +50,7 @@
                     "aggregationKind": "SingleAlert"
                 },
                 "alertDetailsOverride": {
-                    "alertDisplayNameFormat": "Admin User Has Logged onto Portal",
+                    "alertDisplayNameFormat": "Admin User Has Logged onto Portal-WSd",
                     "alertDescriptionFormat": "Admin User: {{Identity}} has logged onto the portal at {{TimeGenerated}}"
                 },
                 "customDetails": null,
