@@ -1,0 +1,74 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/affe965d-e578-40b2-9ee0-6ca18f247381')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/affe965d-e578-40b2-9ee0-6ca18f247381')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2022-09-01-preview",
+            "properties": {
+                "displayName": "Public IP Created On VM",
+                "description": "",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AzureActivity\n| extend resource_created = tostring(parse_json(Properties).resource)\n| extend resourceGroup = tostring(parse_json(Properties).resourceGroup)\n| where ActivitySubstatusValue == \"Created\"\n| where OperationNameValue == \"MICROSOFT.NETWORK/PUBLICIPADDRESSES/WRITE\"\n| project TimeGenerated, Caller, resource_created, resourceGroup\n",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "tactics": [
+                    "ResourceDevelopment"
+                ],
+                "techniques": [
+                    "T1583"
+                ],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": true,
+                        "lookbackDuration": "P1D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": {
+                    "alertDisplayNameFormat": "A VM Has a Public IP Created by {{Caller}}",
+                    "alertDescriptionFormat": "{{Caller}} has put on a public IP Address for {{resource_created}} at {{TimeGenerated}}"
+                },
+                "customDetails": {
+                    "Resource_Created": "resource_created",
+                    "Resource_Group": "resourceGroup",
+                    "Time_Generated": "TimeGenerated"
+                },
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "Caller"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null
+            }
+        }
+    ]
+}

@@ -1,0 +1,72 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/912c89af-8205-4b27-bbf0-70c78f3c4961')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/912c89af-8205-4b27-bbf0-70c78f3c4961')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2022-09-01-preview",
+            "properties": {
+                "displayName": "User_Admin_Logins - Watchlist",
+                "description": "Used to monitor Admin Logins from a Github Repo CSV File as a watchlist",
+                "severity": "High",
+                "enabled": true,
+                "query": "let users = externaldata(users:string)[@\"https://raw.githubusercontent.com/edtechjeff/Sentinel-Prod-Watchlist/main/watchlist/users.csv\"] with (format=\"csv\", ignoreFirstRecord=True);\nSigninLogs\n| where Identity in (users)\n",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "tactics": [
+                    "ResourceDevelopment",
+                    "InitialAccess"
+                ],
+                "techniques": [
+                    "T1586",
+                    "T1566"
+                ],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P1D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": {
+                    "alertDisplayNameFormat": "Admin User Has Logged onto Portal",
+                    "alertDescriptionFormat": "Admin User: {{Identity}} has logged onto the portal at {{TimeGenerated}}"
+                },
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "Identity"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null
+            }
+        }
+    ]
+}
