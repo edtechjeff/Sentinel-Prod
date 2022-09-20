@@ -18,7 +18,7 @@
                 "description": "Used to monitor Admin Logins from a Github Repo CSV File as a watchlist",
                 "severity": "High",
                 "enabled": true,
-                "query": "let users = externaldata(users:string)[@\"https://raw.githubusercontent.com/edtechjeff/Sentinel-Prod-Watchlist/main/watchlist/users.csv\"] with (format=\"csv\", ignoreFirstRecord=True);\nSigninLogs\n| where Identity in (users)\n",
+                "query": "let users = externaldata(users:string)[@\"https://raw.githubusercontent.com/edtechjeff/Sentinel-Prod/main/watchlist/users.csv\"] with (format=\"csv\", ignoreFirstRecord=True);\nSigninLogs\n| where Identity in (users)\n",
                 "queryFrequency": "PT5M",
                 "queryPeriod": "PT5M",
                 "triggerOperator": "GreaterThan",
