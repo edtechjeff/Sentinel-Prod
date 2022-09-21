@@ -17,7 +17,7 @@
                 "displayName": "Extended Leave - Watchlist",
                 "description": "",
                 "severity": "High",
-                "enabled": false,
+                "enabled": true,
                 "query": "SigninLogs\n| extend UserPrincipalName_ = tolower(UserPrincipalName) | join (_GetWatchlist('ExtendedLeave')\n| where leave == 1 \n| project UserNames = tolower(UserName)\n) on $left.UserPrincipalName_ ==  $right.UserNames\n",
                 "queryFrequency": "PT5M",
                 "queryPeriod": "PT5M",
