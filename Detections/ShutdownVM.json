@@ -16,7 +16,7 @@
             "properties": {
                 "displayName": "Shutdown VM",
                 "description": "",
-                "severity": "High",
+                "severity": "Low",
                 "enabled": true,
                 "query": "AzureActivity\r\n| where OperationNameValue == \"MICROSOFT.COMPUTE/VIRTUALMACHINES/DEALLOCATE/ACTION\"\r\n| parse _ResourceId with * \"/virtualmachines/\" Virtualmachine",
                 "queryFrequency": "PT5M",
@@ -31,7 +31,7 @@
                 "techniques": [],
                 "alertRuleTemplateName": null,
                 "incidentConfiguration": {
-                    "createIncident": true,
+                    "createIncident": false,
                     "groupingConfiguration": {
                         "enabled": false,
                         "reopenClosedIncident": false,
