@@ -16,7 +16,7 @@
             "properties": {
                 "displayName": "Heartbeat",
                 "description": "",
-                "severity": "Medium",
+                "severity": "Low",
                 "enabled": true,
                 "query": "Heartbeat\r\n| take 1",
                 "queryFrequency": "PT1H",
@@ -32,7 +32,7 @@
                 "techniques": [],
                 "alertRuleTemplateName": null,
                 "incidentConfiguration": {
-                    "createIncident": true,
+                    "createIncident": false,
                     "groupingConfiguration": {
                         "enabled": true,
                         "reopenClosedIncident": true,
