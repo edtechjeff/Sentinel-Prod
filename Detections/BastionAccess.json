@@ -33,12 +33,16 @@
                 "incidentConfiguration": {
                     "createIncident": true,
                     "groupingConfiguration": {
-                        "enabled": false,
-                        "reopenClosedIncident": false,
+                        "enabled": true,
+                        "reopenClosedIncident": true,
                         "lookbackDuration": "PT5H",
                         "matchingMethod": "AllEntities",
-                        "groupByEntities": [],
-                        "groupByAlertDetails": [],
+                        "groupByEntities": [
+                            "Host"
+                        ],
+                        "groupByAlertDetails": [
+                            "Severity"
+                        ],
                         "groupByCustomDetails": []
                     }
                 },
