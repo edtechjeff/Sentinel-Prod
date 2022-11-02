@@ -32,7 +32,7 @@
                 "techniques": [],
                 "alertRuleTemplateName": null,
                 "incidentConfiguration": {
-                    "createIncident": false,
+                    "createIncident": true,
                     "groupingConfiguration": {
                         "enabled": true,
                         "reopenClosedIncident": false,
