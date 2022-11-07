@@ -48,7 +48,7 @@
                     }
                 },
                 "eventGroupingSettings": {
-                    "aggregationKind": "SingleAlert"
+                    "aggregationKind": "AlertPerResult"
                 },
                 "alertDetailsOverride": {
                     "alertDisplayNameFormat": "HeartBeat - Alert for {{Resource}} has been created on Subscription {{SubscriptionId}}",
