@@ -18,7 +18,7 @@
                 "description": "",
                 "severity": "Medium",
                 "enabled": true,
-                "query": "datatable(User:string,IP:string,URL:string)\r\n['user@contoso.com','10.120.11.55','https://www.contoso.com',\r\n'user2@contoso.com','10.99.11.55','https://www.fabrikam.com',\r\n'jeff.downs@edtechjeff.com,'68.38.60.197','https://www.edtechjeff.com']\r\n",
+                "query": "datatable(User:string,IP:string,URL:string)\r\n['user@contoso.com','10.120.11.55','https://www.contoso.com',\r\n'user2@contoso.com','10.99.11.55','https://www.fabrikam.com',\r\n'jeff.downs@edtechjeff.com','68.38.60.197','https://www.edtechjeff.com']\r\n",
                 "queryFrequency": "PT5H",
                 "queryPeriod": "PT5H",
                 "triggerOperator": "GreaterThan",
