@@ -17,7 +17,7 @@
                 "displayName": "AppLocker Bypass",
                 "description": "",
                 "severity": "High",
-                "enabled": true,
+                "enabled": false,
                 "query": "SecurityAlert\n| where AlertSeverity == \"High\" and AlertName contains \"bypass\" and ProviderName == \"Azure Security Center\"\n| extend HostCustomEntity = tostring(parse_json(Entities)[0].HostName)\n\n",
                 "queryFrequency": "PT5M",
                 "queryPeriod": "PT5M",
