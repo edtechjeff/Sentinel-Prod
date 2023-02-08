@@ -1,0 +1,100 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/d133b0ff-b353-4692-b6e9-5e253d1a61c4')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/d133b0ff-b353-4692-b6e9-5e253d1a61c4')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2022-09-01-preview",
+            "properties": {
+                "displayName": "Terraform Actions",
+                "description": "",
+                "severity": "High",
+                "enabled": true,
+                "query": "AuditLogs\n| extend Initiatedby = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)\n| extend Provider = tostring(AdditionalDetails[0].value)\n| parse Provider with * \"HashiCorp\" myProvider \"/\" *\n| where Provider contains \"Terraform\"\n| project Initiatedby, OperationName, Result, myProvider, TimeGenerated\n",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "tactics": [
+                    "ResourceDevelopment"
+                ],
+                "techniques": [
+                    "T1587",
+                    "T1585"
+                ],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P1D",
+                        "matchingMethod": "AnyAlert",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "AlertPerResult"
+                },
+                "alertDetailsOverride": {
+                    "alertDisplayNameFormat": "{{Initiatedby}} used {{myProvider}} to {{OperationName}} ",
+                    "alertDescriptionFormat": "{{myProvider}} to {{OperationName}}  by {{TimeGenerated}}",
+                    "alertDynamicProperties": []
+                },
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "AadUserId",
+                                "columnName": "Initiatedby"
+                            },
+                            {
+                                "identifier": "FullName",
+                                "columnName": "Initiatedby"
+                            },
+                            {
+                                "identifier": "DisplayName",
+                                "columnName": "Initiatedby"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": [
+                    {
+                        "entityType": "SentinelEntities",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Entities",
+                                "columnName": "OperationName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "SentinelEntities",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Entities",
+                                "columnName": "myProvider"
+                            }
+                        ]
+                    }
+                ],
+                "templateVersion": null
+            }
+        }
+    ]
+}
