@@ -1,0 +1,58 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "AutomationRuleDisplayName": {
+            "metadata": {
+                "description": "AutomationRuleDisplayName"
+            },
+            "type": "String",
+            "defaultValue": "User Admin Login"
+        },
+        "workspace": {
+            "metadata": {
+                "description": "Log Analytics Workspace Name"
+            },
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "name": "3233ead3-8897-48a3-93c7-08579b36df45",
+            "type": "Microsoft.SecurityInsights/automationRules",
+            "properties": {
+                "displayName": "[parameters('AutomationRuleDisplayName')]",
+                "order": 8,
+                "triggeringLogic": {
+                    "isEnabled": false,
+                    "triggersOn": "Incidents",
+                    "triggersWhen": "Created",
+                    "conditions": [
+                        {
+                            "conditionType": "Property",
+                            "conditionProperties": {
+                                "propertyName": "IncidentRelatedAnalyticRuleIds",
+                                "operator": "Contains",
+                                "propertyValues": [
+                                    "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers/', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/912c89af-8205-4b27-bbf0-70c78f3c4961')]"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "actions": [
+                    {
+                        "order": 1,
+                        "actionType": "RunPlaybook",
+                        "actionConfiguration": {
+                            "logicAppResourceId": "[concat(subscriptionResourceId('Microsoft.Resources/resourceGroups/', resourceGroup().name), '/providers/Microsoft.Logic/workflows/', 'Prompt-User-Incident')]",
+                            "tenantId": "[subscription().tenantId]"
+                        }
+                    }
+                ]
+            },
+            "apiVersion": "2019-01-01-preview",
+            "scope": "[concat('Microsoft.OperationalInsights/workspaces/', parameters('workspace'))]"
+        }
+    ]
+}
