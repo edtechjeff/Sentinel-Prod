@@ -24,7 +24,7 @@
                 "displayName": "[parameters('AutomationRuleDisplayName')]",
                 "order": 8,
                 "triggeringLogic": {
-                    "isEnabled": false,
+                    "isEnabled": true,
                     "triggersOn": "Incidents",
                     "triggersWhen": "Created",
                     "conditions": [
