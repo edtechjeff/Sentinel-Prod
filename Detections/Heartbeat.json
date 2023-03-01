@@ -17,7 +17,7 @@
                 "displayName": "Heartbeat",
                 "description": "",
                 "severity": "Low",
-                "enabled": false,
+                "enabled": true,
                 "query": "Heartbeat\r\n| take 1",
                 "queryFrequency": "PT5M",
                 "queryPeriod": "PT6M",
