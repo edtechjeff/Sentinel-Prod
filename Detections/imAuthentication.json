@@ -1,0 +1,91 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/c03f77e1-e8e5-4684-8232-7bd64796915b')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/c03f77e1-e8e5-4684-8232-7bd64796915b')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2022-09-01-preview",
+            "properties": {
+                "displayName": "imAuthentication",
+                "description": "",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let timeframe = ago(3h);\nlet threshold = 0;\nlet vpn_ranges = (_GetWatchlist('AllowedNetworkAddresses'));\nimAuthentication\n| where TimeGenerated > timeframe\n| where EventType == 'Logon' and EventResult == 'Success'\n| where isnotempty(SrcGeoCountry)\n| where isnotempty(SrcDvcIpAddr)\n//| where ipv4_is_in_range(SrcDvcIpAddr,\"68.38.0.0/16\") == false\n| extend State = tostring(parse_json(LocationDetails_string).state)\n| extend City = tostring(Location.city)\n| evaluate ipv4_lookup(vpn_ranges, SrcDvcIpAddr, SearchKey, return_unmatched = true)\n| summarize StartTime = min(TimeGenerated), \n                        EndTime = max(TimeGenerated), \n                        Vendors=make_set(EventVendor,100), \n                        Products=make_set(EventProduct,100), \n                        IPs=make_set(SrcDvcIpAddr,100), \n                        Countries=make_set(SrcGeoCountry,100), \n                        NumOfCountries = dcount(SrcGeoCountry), \n                        IPAddresses = make_set(SrcDvcIpAddr,100) by TargetUserId, \n                        TargetUsername, \n                        TargetUserType,\n                        State,\n                        City\n| where NumOfCountries >= threshold\n| extend timestamp = StartTime, AccountCustomEntity = TargetUsername\n| project-reorder TargetUsername, TargetUserId, Countries, State, City, IPs\n",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Reconnaissance",
+                    "ResourceDevelopment"
+                ],
+                "techniques": [
+                    "T1586"
+                ],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P1D",
+                        "matchingMethod": "Selected",
+                        "groupByEntities": [
+                            "Account"
+                        ],
+                        "groupByAlertDetails": [
+                            "DisplayName"
+                        ],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "AlertPerResult"
+                },
+                "alertDetailsOverride": {
+                    "alertDisplayNameFormat": "User:{{AccountCustomEntity}} logged on ",
+                    "alertDescriptionFormat": "User:{{AccountCustomEntity}} logged on from {{City}} and {{Countries}}",
+                    "alertDynamicProperties": []
+                },
+                "customDetails": {
+                    "City": "City",
+                    "State": "State",
+                    "Countries": "Countries"
+                },
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "AccountCustomEntity"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "IPAddresses"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        }
+    ]
+}

@@ -1,0 +1,68 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1372ab6a-6077-407d-a73f-7fb780b18839')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1372ab6a-6077-407d-a73f-7fb780b18839')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2022-09-01-preview",
+            "properties": {
+                "displayName": "Low Incidents",
+                "description": "",
+                "severity": "Informational",
+                "enabled": false,
+                "query": "SecurityIncident\n| where Status != \"closed\"\n| where Severity == \"Low\"\n| mv-expand AnalyticRuleId=RelatedAnalyticRuleIds\n| extend AnalyticRuleId=tostring(AnalyticRuleId)\n| summarize IncidentAmount=count() by AnalyticRuleId\n| join kind=rightouter\n    (SecurityAlert\n    | where AlertSeverity == \"Low\"\n    | extend ExtendedProperties = todynamic(ExtendedProperties)\n    | extend AnalyticRuleIds=ExtendedProperties['Analytic Rule Ids']\n    | extend AnalyticRuleIds= tostring(AnalyticRuleIds)\n    | mv-expand RuleId=todynamic(AnalyticRuleIds)\n    | extend RuleId= tostring(RuleId)\n    | summarize AlertAmount=count() by RuleId\n    | join (SecurityAlert\n        | extend ExtendedProperties = todynamic(ExtendedProperties)\n        | extend AnalyticRuleIds=ExtendedProperties['Analytic Rule Ids']\n        | extend AnalyticRuleIds = tostring(AnalyticRuleIds)\n        | mv-expand RuleId=todynamic(AnalyticRuleIds)\n        | extend RuleId=tostring(RuleId))\n        on $left.RuleId == $right.RuleId)\n    on $left.AnalyticRuleId == $right.RuleId\n| extend IncidentAmount=iff(IncidentAmount >= 0, IncidentAmount, 0)\n| where IncidentAmount < 5 and AlertAmount < 5\n| extend SecurityAlertEntities=Entities \n\n",
+                "queryFrequency": "P1D",
+                "queryPeriod": "P1D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [],
+                "techniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AnyAlert",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "AlertPerResult"
+                },
+                "alertDetailsOverride": {
+                    "alertDisplayNameFormat": "{{DisplayName}}",
+                    "alertDynamicProperties": []
+                },
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": [
+                    {
+                        "entityType": "SentinelEntities",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Entities",
+                                "columnName": "SecurityAlertEntities"
+                            }
+                        ]
+                    }
+                ],
+                "templateVersion": null
+            }
+        }
+    ]
+}
